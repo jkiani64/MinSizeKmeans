@@ -124,7 +124,7 @@ def minsize_kmeans_weighted(dataset, k, weights=None, min_weight=0, max_weight=N
             return None, None
         clusters_, centers = compute_centers(clusters_, dataset)
 
-        converged = all([clusters[i]==clusters_[i] for i in xrange(n)])
+        converged = all([clusters[i]==clusters_[i] for i in range(n)])
         clusters = clusters_
         if converged:
             break
@@ -166,46 +166,3 @@ def compute_quality(data, cluster_indices):
         else:
             clusters[c] = [data[i]]
     return sum(cluster_quality(c) for c in clusters.values())
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('datafile', help='file containing the coordinates of instances')
-    parser.add_argument('k', help='number of clusters', type=int)
-    parser.add_argument('weightfile', help='file containing the weights of instances')
-    parser.add_argument('min_weight', help='minimum total weight for each cluster', type=float)
-    parser.add_argument('max_weight', help='maximum total weight for each cluster', type=float)
-    parser.add_argument('-n', '--NUM_ITER', type=int,
-                        help='run the algorithm for NUM_ITER times and return the best clustering',
-                        default=1)
-    parser.add_argument('-o', '--OUTFILE', help='store the result in OUTFILE',
-                        default='')
-    args = parser.parse_args()
-
-    data = read_data(args.datafile)
-    weights = read_weights(args.weightfile)
-
-    best = None
-    best_clusters = None
-    for i in range(args.NUM_ITER):
-        clusters, centers = minsize_kmeans_weighted(data, args.k, weights,
-                                           args.min_weight, args.max_weight)
-        if clusters:
-            quality = compute_quality(data, clusters)
-            if not best or (quality < best):
-                best = quality
-                best_clusters = clusters
-
-    if best:
-        if args.OUTFILE:
-            with open(args.OUTFILE, 'w') as f:
-                f.write('\n'.join(str(i) for i in best_clusters))
-        else:
-            print('cluster assignments:')
-            for i in range(len(best_clusters)):
-                print('%d: %d'%(i, best_clusters[i]))
-        print('sum of squared distances: %.4f'%(best))
-    else:
-        print('no clustering found')
-
-
